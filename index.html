@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정보보안암호수학과 전공 신청 현황</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        * { font-family: 'Pretendard', sans-serif; }
+        .active-crypto {
+            background-color: rgb(239 246 255); /* bg-blue-50 */
+            border-color: rgb(147 197 253); /* border-blue-400 */
+            color: rgb(37 99 235); /* text-blue-600 */
+        }
+        
+        .active-other {
+            background-color: rgb(243 232 255); /* bg-purple-50 */
+            border-color: rgb(192 132 252); /* border-purple-400 */
+            color: rgb(147 51 234); /* text-purple-600 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 헤더 섹션 -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto py-6 px-4">
+            <h1 class="text-3xl font-bold text-gray-900">
+                정보보안암호수학과 전공 신청 현황 (2017-2025)
+            </h1>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="max-w-7xl mx-auto py-6 px-4">
+        <!-- 카테고리 선택 카드 -->
+        <div class="flex space-x-4 mb-6">
+            <!-- 정보보안암호수학과 다전공 -->
+            <button onclick="showSection('crypto-major')" 
+                    class="flex-1 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center text-blue-600 font-medium border-2 border-blue-200 hover:bg-blue-50 active-crypto">
+                정보보안 다전공
+            </button>
+            
+            <!-- 정보보안암호수학과 부전공 -->
+            <button onclick="showSection('crypto-minor')" 
+                    class="flex-1 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center text-blue-600 font-medium border-2 border-blue-200 hover:bg-blue-50 active-crypto">
+                정보보안 부전공
+            </button>
+            
+            <!-- 타과생 다전공 -->
+            <button onclick="showSection('other-major')" 
+                    class="flex-1 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center text-purple-600 font-medium border-2 border-purple-200 hover:bg-purple-50 active-other">
+                타과생 다전공
+            </button>
+            
+            <!-- 타과생 부전공 -->
+            <button onclick="showSection('other-minor')" 
+                    class="flex-1 bg-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-shadow text-center text-purple-600 font-medium border-2 border-purple-200 hover:bg-purple-50 active-other">
+                타과생 부전공
+            </button>
+        </div>
+
+        <!-- 데이터 시각화 섹션 -->
+        <div id="visualization-container" class="hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 id="section-title" class="text-xl font-semibold text-gray-900 mb-6"></h2>
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- 차트 영역 -->
+                    <div class="lg:w-2/3">
+                        <div id="chart" class="h-[500px]"></div>
+                    </div>
+                    <!-- 테이블 영역 -->
+                    <div class="lg:w-1/3">
+                        <div class="bg-gray-50 rounded-lg p-4 h-[500px] overflow-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">학과</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">인원</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="data-table" class="bg-white divide-y divide-gray-200">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 데이터 정의
+        const chartData = {
+            'crypto-major': {
+                title: '정보보안암호수학과 학생들의 다전공 신청 현황',
+                data: {
+                    y: ['소프트웨어전공', '양자보안차세대통신전공', '경제학과', '경제·수학융합전공', '경영학전공', 
+                        '사빅데이터융합경영학과', '제무금융전공', '교육학과', '자동차IT융합학과', '나노전자물리학과',
+                        '빅데이터경영통계전공', '미디어전공', '기계공학전공', '미래기술융합디자인전공', 
+                        '빅데이터경제학융합전공', '공법학전공', '광고홍보학전공', '필름소피아(교양심화전공)', 
+                        '인공지능전공', '기계시스템공학전공', '사법학전공', '회계학전공', '바이오말호융합학과',
+                        '전자시스템공학전공', '소프트웨어·미래자동차연계전공'],
+                    x: [100, 8, 7, 6, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1],
+                    colors: [
+                        '#FFB3B3', '#FFDAB3', '#B3E0FF', '#B3FFB3', '#E0B3FF', 
+                        '#FFD1D1', '#FFE4CC', '#CCE9FF', '#CCFFCC', '#EECCFF',
+                        '#FFC8C8', '#FFEEDD', '#D9F0FF', '#D9FFD9', '#F0D9FF',
+                        '#FFBFBF', '#FFD9B3', '#B3D9FF', '#B3FFB3', '#D9B3FF',
+                        '#FFB3B3', '#FFDAB3', '#B3E0FF', '#B3FFB3', '#E0B3FF'
+                    ]
+                }
+            },
+            'crypto-minor': {
+                title: '정보보안암호수학과 학생들의 부전공 신청 현황',
+                data: {
+                    y: ['소프트웨어전공', '양자보안차세대통신전공', '경제학과', '자치시스템공학전공', 
+                        '사빅데이터융합경영학과', '응용심리학전공', '경제·수학융합전공', '디지털엔털인먼트전공',
+                        '소프트웨어광고융합전공', '미래기술융합디자인전공', 'Entrepreneurship융합전공',
+                        '인공지능전공', '중국어문전공', '회계학전공', '정치외교학과', '경영학전공',
+                        '정보보안암호수학과', '나노전자물리학과', '시각디자인학과', '융합전자공학전공',
+                        '사법학전공', '미디어전공', '빅데이터경영통계전공'],
+                    x: [95, 7, 6, 4, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1],
+                    colors: Array(23).fill().map((_, i) => `hsl(${(i * 15) % 360}, 70%, 85%)`)
+                }
+            },
+            'other-major': {
+                title: '타과생의 정보보안암호수학과 다전공 신청 현황',
+                data: {
+                    y: ['AI빅데이터융합경영학과', '산림환경시스템학과', '소프트웨어학부 소프트웨어전공', 
+                        '경제학과', '국제통상학과', '나노전자물리학과', '자동차IT융합학과'],
+                    x: [4, 2, 1, 1, 1, 1, 1],
+                    colors: Array(7).fill().map((_, i) => `hsl(${(i * 50) % 360}, 70%, 85%)`)
+                }
+            },
+            'other-minor': {
+                title: '타과생의 정보보안암호수학과 부전공 신청 현황',
+                data: {
+                    y: ['산림환경시스템학과', '소프트웨어전공', '빅데이터경영통계전공',
+                        '기계시스템공학전공', '나노전자물리학과', '사빅데이터융합경영학과',
+                        '경영학전공', '경제학과', '영상디자인학과', '정치외교학과',
+                        '국제통상학과', '에너지기계공학전공', '임산생명공학과',
+                        '응용화학과', '바이오발효융합학과', '전자공학전공'],
+                    x: [3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    colors: Array(16).fill().map((_, i) => `hsl(${(i * 20) % 360}, 70%, 85%)`)
+                }
+            }
+        };
+
+        // 차트 레이아웃 최적화
+        const layout = {
+            margin: { l: 300, r: 30, t: 30, b: 50 },
+            height: 900,
+            xaxis: { 
+                title: '학생 수',
+                tickfont: { 
+                    size: 13,
+                    color: '#2d3748'  // 진한 회색
+                }
+            },
+            yaxis: { 
+                autorange: 'reversed',
+                tickfont: { 
+                    size: 14,  // 글자 크기 증가
+                    family: 'Pretendard',
+                    color: '#1a202c',  // 더 진한 회색
+                    weight: 500  // 약간 더 두껍게
+                }
+            },
+            font: { 
+                family: 'Pretendard',
+                size: 13
+            },
+            bargap: 0.2,
+            paper_bgcolor: 'rgba(255,255,255,0.9)',
+            plot_bgcolor: 'rgba(255,255,255,0.9)',
+            hoverlabel: {
+                font: {
+                    size: 14,
+                    family: 'Pretendard'
+                }
+            }
+        };
+
+        // 버튼 활성화 상태 관리 함수 추가
+        function updateButtonStates(activeSection) {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.classList.remove('active-crypto', 'active-other');
+                
+                if (button.getAttribute('onclick').includes(activeSection)) {
+                    if (activeSection.startsWith('crypto')) {
+                        button.classList.add('active-crypto');
+                    } else {
+                        button.classList.add('active-other');
+                    }
+                }
+            });
+        }
+
+        function showSection(sectionId) {
+            const section = chartData[sectionId];
+            document.getElementById('visualization-container').classList.remove('hidden');
+            document.getElementById('section-title').textContent = section.title;
+
+            // 차트 생성
+            const trace = {
+                y: section.data.y,
+                x: section.data.x,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: section.data.colors,
+                    opacity: 0.8
+                }
+            };
+
+            const data = [trace];
+
+            Plotly.newPlot('chart', data, layout);
+
+            // 테이블 업데이트
+            const tableBody = document.getElementById('data-table');
+            tableBody.innerHTML = '';
+            section.data.y.forEach((dept, index) => {
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${dept}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${section.data.x[index]}</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+
+            // 버튼 상태 업데이트 추가
+            updateButtonStates(sectionId);
+        }
+
+        // 초기 로드 시 첫 번째 섹션 표시
+        showSection('crypto-major');
+    </script>
+</body>
+</html>
